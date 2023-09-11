@@ -48,5 +48,12 @@ namespace GameLibraryRestApi.Repositories.Interfaces
         {
             return await _context.Set<TEntity>().FirstOrDefaultAsync(match);
         }
+
+        public virtual async Task<TEntity> DeleteAsync(TEntity entity)
+        {
+            _context.Set<TEntity>().Remove(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
     }
 }

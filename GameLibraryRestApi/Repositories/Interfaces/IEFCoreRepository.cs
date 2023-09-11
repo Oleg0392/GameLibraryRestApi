@@ -14,5 +14,7 @@ namespace GameLibraryRestApi.Repositories.Interfaces
 
         Task<TEntity> FindFirstWhereAsync(Expression<Func<TEntity, bool>> match);
 
+        Task<TEntity> DeleteAsync(TEntity entity);
+
     }
 }

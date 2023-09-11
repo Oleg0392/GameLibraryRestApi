@@ -18,46 +18,60 @@ namespace GameLibraryRestApi.UnitOfWorks
             this.genreRefRepository = genreRefRepository;
         }
 
-        public async Task<Game?> InsertNewGame(string Name, string Genres, string Developer)
+        public IGameRepository Games => gameRepository;
+        public IGenreRepository Genres => genreRepository;
+        public IDeveloperRepository Developers => developerRepository;
+        public IGenreRefRepository GenreRefs => genreRefRepository;
+
+        public async Task<Game?> InsertNewGame(string NameArg, string GenresArg, string DeveloperArg)
         {
-            if (String.IsNullOrEmpty(Name)) return null;
+            if (String.IsNullOrEmpty(NameArg)) return null;
 
             string[] genres = new string[0];
 
-            if (!String.IsNullOrEmpty(Genres)) genres = Genres.Split(',');
+            if (!String.IsNullOrEmpty(GenresArg)) genres = GenresArg.Split(',').ToArray();
+            if (String.IsNullOrEmpty(DeveloperArg)) return null;  // т.к. DeveloperId required
 
-            if (String.IsNullOrEmpty(Developer)) Developer = String.Empty;
-
-            var gameObj = gameRepository.FindFirstWhereAsync(game => game.Name.Equals(Name)).Result;
+            var gameObj = gameRepository.FindFirstWhereAsync(game => game.Name.ToUpper().Equals(NameArg.ToUpper())).Result;
             if (gameObj != null) return null;   // игра с таким именем уже существует
+            gameObj = new Game() { Name = NameArg };
 
-            gameObj = new Game();
-            gameObj.Name = Name;
-
-            var refs = new List<GenreRef>();
+            var refs = new List<GenreRef>();    // создаем ссылки для таблицы соответствий GenreRef (GameId, GenreId)
             foreach (var genre in genres)
             {
-                var genreObj = genreRepository.FindFirstWhereAsync(genre => genre.Name.Equals(genre)).Result;
+                var genreObj = genreRepository.FindFirstWhereAsync(g => g.Name.ToUpper().Equals(genre.ToUpper())).Result;
                 if (genreObj == null)
                 {
-                    genreObj = genreRepository.InsertAsync(genreObj).Result;
+                    genreObj = new Genre() { Name = genre };
+                    genreObj = genreRepository.InsertAsync(genreObj).Result;   // если нет такого жанра
                 }
                 refs.Add(new GenreRef() { GameId = gameObj.Id, GenreId = genreObj.Id });
             }
 
-            if (refs.Count > 0) await genreRefRepository.InsertRangeAsync(refs);
+            if (refs.Count > 0) await genreRefRepository.InsertRangeAsync(refs);   // вставляем ссылки
                        
-            var developer = developerRepository.FindFirstWhereAsync(dev => dev.Name.Equals(Developer)).Result;
-            if (developer == null)
+            var developerObj = developerRepository.FindFirstWhereAsync(dev => dev.Name.ToUpper().Equals(DeveloperArg.ToUpper())).Result;  
+            if (developerObj == null)
             {
-                developer = developerRepository.InsertAsync(developer).Result;
+                developerObj = new Developer() { Name = DeveloperArg };
+                developerObj = developerRepository.InsertAsync(developerObj).Result;  // аналогично с разрабами, если нет такого, вставляем
             }
 
-            gameObj.Developer = developer.Id;
-
-            gameObj = gameRepository.InsertAsync(gameObj).Result;
+            gameObj.Developer = developerObj.Id;    // привязка разраба к игре
+            gameObj = gameRepository.InsertAsync(gameObj).Result;   // вставка самой игры
 
             return gameObj;
-        }    
+        }
+        
+        public async Task<Game?> DeleteGameAsync(Game gameToDelete)
+        {
+            if (gameToDelete == null) return null;
+
+            gameToDelete = await gameRepository.FindFirstWhereAsync(g => g.Name.ToUpper().Equals(gameToDelete.Name.ToUpper()));
+            if (gameToDelete == null) return null;
+
+            await genreRefRepository.DeleteDependenсies(gameToDelete);
+            return await gameRepository.DeleteAsync(gameToDelete);
+        }
     }
 }

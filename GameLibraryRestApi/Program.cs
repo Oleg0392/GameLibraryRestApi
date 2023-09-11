@@ -1,6 +1,7 @@
 using GameLibraryRestApi.AppStart;
 using GameLibraryRestApi.Repositories.Interfaces;
 using GameLibraryRestApi.Repositories;
+using GameLibraryRestApi.UnitOfWorks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 
@@ -23,6 +24,8 @@ namespace GameLibraryRestApi
             builder.Services.AddScoped<IGameRepository, GameRepository>();
             builder.Services.AddScoped<IGenreRepository, GenreRepository>();
             builder.Services.AddScoped<IDeveloperRepository, DeveloperRepository>();
+            builder.Services.AddScoped<IGenreRefRepository, GenreRefRepository>();
+            builder.Services.AddScoped<IUnitOfWorks, UnitOfWorks.UnitOfWorks>();
 
             var app = builder.Build();
 

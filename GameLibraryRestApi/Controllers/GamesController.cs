@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using GameLibraryRestApi.Repositories.Interfaces;
+using GameLibraryRestApi.UnitOfWorks;
+using GameLibraryRestApi.Data.Entities;
 
 namespace GameLibraryRestApi.Controllers
 {
@@ -7,18 +8,19 @@ namespace GameLibraryRestApi.Controllers
     [Route("[controller]")]
     public class GamesController : ControllerBase
     {
-        private readonly IGameRepository gameRepository;
+        //private readonly IGameRepository gameRepository;
+        private readonly IUnitOfWorks unitOfWorks;
 
-        public GamesController(IGameRepository gameRepository)
+        public GamesController(IUnitOfWorks unitOfWorks)
         {
-            this.gameRepository = gameRepository;
+            this.unitOfWorks = unitOfWorks;
         }
 
         [HttpGet]
         [Route("all")]
         public async Task<IActionResult> GetAllGames()
         {
-            return Ok(await gameRepository.GetAllAsync());
+            return Ok(await unitOfWorks.Games.GetAllAsync());
         }
 
         [HttpGet]
@@ -27,7 +29,7 @@ namespace GameLibraryRestApi.Controllers
         {
             if (ModelState.IsValid && name != null)
             {
-                return Ok(await gameRepository.FindAllByWhereAsync(game => game.Name.StartsWith(name)));
+                return Ok(await unitOfWorks.Games.FindAllByWhereAsync(game => game.Name.StartsWith(name)));
             }
             else return BadRequest();
         }
@@ -38,16 +40,29 @@ namespace GameLibraryRestApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                return Ok(await gameRepository.FindFirstWhereAsync(game => game.Id == id));
+                return Ok(await unitOfWorks.Games.FindFirstWhereAsync(game => game.Id == id));
             }
             else return BadRequest();
         }
 
         [HttpPut]
-        [Route("{genres[]}")]
-        public IActionResult AddNewGame(string[] genres)
+        [Route("{name}&{genres}&{developer}")]
+        public async Task<IActionResult> AddNewGame(string name, string genres, string developer)
         {
-            return Ok(genres);
+            
+            return Ok(await unitOfWorks.InsertNewGame(name, genres, developer));
+        }
+
+        [HttpDelete]
+        [Route("{name}")]
+        public async Task<IActionResult> DelGameByName(string name)
+        {
+            if (ModelState.IsValid)
+            {
+                var game = new Game() { Name = name };
+                return Ok(await unitOfWorks.DeleteGameAsync(game));
+            }
+            else return BadRequest();
         }
 
     }
