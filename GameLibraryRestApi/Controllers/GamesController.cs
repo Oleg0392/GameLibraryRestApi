@@ -16,16 +16,38 @@ namespace GameLibraryRestApi.Controllers
 
         [HttpGet]
         [Route("all")]
-        public IActionResult GetAllGames()
+        public async Task<IActionResult> GetAllGames()
         {
-            return Ok("All");
+            return Ok(await gameRepository.GetAllAsync());
         }
 
         [HttpGet]
-        [Route("own")]
-        public IActionResult GetOwnGames()
+        [Route("{name}")]
+        public async Task<IActionResult> GetGamesByName(string name)
         {
-            return Ok("Own");
+            if (ModelState.IsValid && name != null)
+            {
+                return Ok(await gameRepository.FindAllByWhereAsync(game => game.Name.StartsWith(name)));
+            }
+            else return BadRequest();
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<IActionResult> GetGameById(int id)
+        {
+            if (ModelState.IsValid)
+            {
+                return Ok(await gameRepository.FindFirstWhereAsync(game => game.Id == id));
+            }
+            else return BadRequest();
+        }
+
+        [HttpPut]
+        [Route("{genres[]}")]
+        public IActionResult AddNewGame(string[] genres)
+        {
+            return Ok(genres);
         }
 
     }
