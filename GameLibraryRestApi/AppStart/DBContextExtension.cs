@@ -8,7 +8,11 @@ namespace GameLibraryRestApi.AppStart
         public static void AddCustomSqlContext(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<GameLibraryContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<GameLibraryContext>(options =>
+            {
+                options.UseSqlServer(connectionString);
+                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            });
             services.BuildServiceProvider().GetService<GameLibraryContext>().Database.Migrate();
         }
     }

@@ -1,25 +1,33 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using GameLibraryRestApi.Repositories.Interfaces;
 using GameLibraryRestApi.Data.Entities;
+using GameLibraryRestApi.UnitOfWorks;
 
 namespace GameLibraryRestApi.Controllers
-{
+{ 
     [ApiController]
     [Route("[controller]")]
     public class GenresController : ControllerBase
     {
-        private readonly IGenreRepository genreRepository;
+        private readonly IUnitOfWorks unitOfWorks;
 
-        public GenresController(IGenreRepository genreRepository)
+
+        public GenresController(IUnitOfWorks unitOfWorks)
         {
-            this.genreRepository = genreRepository;
+            this.unitOfWorks = unitOfWorks;
         }
 
         [HttpGet]
         [Route("all")]
         public async Task<IActionResult> GetAllGenres()
         {
-            return Ok( await genreRepository.GetAllAsync());
+            return Ok( await unitOfWorks.Genres.GetAllAsync());
+        }
+
+        [HttpGet]
+        [Route("allrefs")]
+        public async Task<IActionResult> GetAllGenreRefs()
+        {
+            return Ok(await unitOfWorks.GenreRefs.GetAllAsync());
         }
 
         [HttpGet]
@@ -28,7 +36,7 @@ namespace GameLibraryRestApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                return Ok(await genreRepository.FindAllByWhereAsync(g => g.Name.StartsWith(name)));
+                return Ok(await unitOfWorks.Genres.FindAllByWhereAsync(g => g.Name.StartsWith(name)));
             }
             else return BadRequest();
         }
@@ -41,8 +49,19 @@ namespace GameLibraryRestApi.Controllers
             {
                 var genre = new Genre();
                 genre.Name = name;
-                await genreRepository.InsertAsync(genre);
+                await unitOfWorks.Genres.InsertAsync(genre);
                 return Ok(genre);
+            }
+            else return BadRequest();
+        }
+
+        [HttpPut]
+        [Route("addref&{game}&{genre}")]
+        public async Task<IActionResult> AddNewGenreReference(string game, string genre)
+        {
+            if (ModelState.IsValid)
+            {
+                return Ok(await unitOfWorks.InsertNewGenreReference(game, genre));
             }
             else return BadRequest();
         }

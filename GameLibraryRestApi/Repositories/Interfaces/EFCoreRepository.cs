@@ -8,12 +8,12 @@ namespace GameLibraryRestApi.Repositories.Interfaces
     {
         private readonly DbContext _context;
 
-        //private readonly DbSet<TEntity> dbSet;
+        private readonly DbSet<TEntity> dbSet;
 
         protected EFCoreRepository(GameLibraryContext context)
         {
             _context = context;
-            //dbSet = context.Set<TEntity>();
+            dbSet = context.Set<TEntity>();
         }
         
         public virtual async Task<TEntity> InsertAsync(TEntity entity)
@@ -54,6 +54,27 @@ namespace GameLibraryRestApi.Repositories.Interfaces
             _context.Set<TEntity>().Remove(entity);
             await _context.SaveChangesAsync();
             return entity;
+        }
+
+        public virtual async Task<TEntity> UpdateAsync(TEntity entityToUpdate)
+        {
+            try
+            {
+                if (_context.Entry(entityToUpdate).State == EntityState.Detached)
+                {
+                    dbSet.Attach(entityToUpdate);
+                }
+
+                _context.Entry(entityToUpdate).State = EntityState.Modified;
+                _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                await _context.SaveChangesAsync();
+
+                return entityToUpdate;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message, e.InnerException);
+            }
         }
     }
 }

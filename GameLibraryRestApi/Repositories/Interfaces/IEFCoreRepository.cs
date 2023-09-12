@@ -16,5 +16,7 @@ namespace GameLibraryRestApi.Repositories.Interfaces
 
         Task<TEntity> DeleteAsync(TEntity entity);
 
+        Task<TEntity> UpdateAsync(TEntity entity);
+
     }
 }

@@ -8,7 +8,6 @@ namespace GameLibraryRestApi.Controllers
     [Route("[controller]")]
     public class GamesController : ControllerBase
     {
-        //private readonly IGameRepository gameRepository;
         private readonly IUnitOfWorks unitOfWorks;
 
         public GamesController(IUnitOfWorks unitOfWorks)
@@ -20,16 +19,27 @@ namespace GameLibraryRestApi.Controllers
         [Route("all")]
         public async Task<IActionResult> GetAllGames()
         {
-            return Ok(await unitOfWorks.Games.GetAllAsync());
+            return Ok(await unitOfWorks.GetAllGames());
         }
 
         [HttpGet]
-        [Route("{name}")]
-        public async Task<IActionResult> GetGamesByName(string name)
+        [Route("genre&{names}")]
+        public async Task<IActionResult> GetGamesByGenre(string names)
         {
-            if (ModelState.IsValid && name != null)
+            if (ModelState.IsValid && names != null)
             {
-                return Ok(await unitOfWorks.Games.FindAllByWhereAsync(game => game.Name.StartsWith(name)));
+                return Ok(await unitOfWorks.GetGamesByGenres(names));
+            }
+            else return BadRequest();
+        }
+
+        [HttpGet]
+        [Route("developers&{names}")]
+        public async Task<IActionResult> GetGamesByDev(string names)
+        {
+            if (ModelState.IsValid && names != null)
+            {
+                return Ok(await unitOfWorks.GetGamesByDevelopers(names));
             }
             else return BadRequest();
         }
@@ -49,9 +59,21 @@ namespace GameLibraryRestApi.Controllers
         [Route("{name}&{genres}&{developer}")]
         public async Task<IActionResult> AddNewGame(string name, string genres, string developer)
         {
-            
+
             return Ok(await unitOfWorks.InsertNewGame(name, genres, developer));
         }
+
+        [HttpPost]
+        [Route("edit{id}&{name}&{desc}&{developer}")]
+        public async Task<IActionResult> EditGame(int id, string name = "null", string desc = "null", string developer = "null")
+        {
+            if (ModelState.IsValid)
+            {
+                return Ok(await unitOfWorks.EditGameById(id, name, desc, developer));  // сюда метод ещё разрабатывается
+            }
+            else return BadRequest();
+        }
+
 
         [HttpDelete]
         [Route("{name}")]
@@ -61,6 +83,17 @@ namespace GameLibraryRestApi.Controllers
             {
                 var game = new Game() { Name = name };
                 return Ok(await unitOfWorks.DeleteGameAsync(game));
+            }
+            else return BadRequest();
+        }
+
+        [HttpDelete]
+        [Route("gameref{id}")]
+        public async Task<IActionResult> DelGameReference(int id)
+        {
+            if (ModelState.IsValid)
+            {
+                return Ok(await unitOfWorks.GenreRefs.DeleteDependenсies(id));
             }
             else return BadRequest();
         }

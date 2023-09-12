@@ -3,6 +3,7 @@ using GameLibraryRestApi.Data.Entities;
 using GameLibraryRestApi.Data.DbContexts;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace GameLibraryRestApi.Repositories
 {
@@ -41,12 +42,28 @@ namespace GameLibraryRestApi.Repositories
             return genreRefs;    
         }
 
-        public async Task<int> DeleteDependenсies(Game gameToDelete)
-        {           
-            if (gameToDelete == null) return 0;
-            string SqlQuery = String.Format("DELETE FROM GenreRefs WHERE GameId = {0}",gameToDelete.Id);
+        public async Task<int> DeleteDependenсies(int gameToDeleteId)
+        {                      
+            string SqlQuery = String.Format("DELETE FROM GenreRefs WHERE GameId = {0}",gameToDeleteId);
             _context.Set<GenreRef>().AsNoTracking();
             return await _context.Database.ExecuteSqlRawAsync(SqlQuery);
         }
+
+        public async Task<List<GenreRef>> FindAllByIdAsync(int genreId)
+        {
+            string SqlQuery = String.Format("SELECT * FROM GenreRefs WHERE GenreId = {0}", genreId);
+            _context.Set<GenreRef>().AsNoTracking();
+
+            return await _context.Set<GenreRef>().FromSqlRaw(SqlQuery).ToListAsync();          
+        }
+
+        public async Task<List<GenreRef>> FindAllByGameIdAsync(int gameId)
+        {
+            string SqlQuery = String.Format("SELECT * FROM GenreRefs WHERE GameId = {0}", gameId);
+            _context.Set<GenreRef>().AsNoTracking();
+
+            return await _context.Set<GenreRef>().FromSqlRaw(SqlQuery).ToListAsync();
+        }
+
     }
 }
