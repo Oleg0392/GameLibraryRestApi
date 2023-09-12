@@ -23,7 +23,7 @@ namespace GameLibraryRestApi.Controllers
         }
 
         [HttpGet]
-        [Route("{name}")]
+        [Route("by-name&{name}")]
         public async Task<IActionResult> GetDevByName(string name)
         {
             if (ModelState.IsValid)

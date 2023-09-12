@@ -23,7 +23,7 @@ namespace GameLibraryRestApi.Controllers
         }
 
         [HttpGet]
-        [Route("genre&{names}")]
+        [Route("by-genre&{names}")]
         public async Task<IActionResult> GetGamesByGenre(string names)
         {
             if (ModelState.IsValid && names != null)
@@ -34,7 +34,7 @@ namespace GameLibraryRestApi.Controllers
         }
 
         [HttpGet]
-        [Route("developers&{names}")]
+        [Route("by-developers&{names}")]
         public async Task<IActionResult> GetGamesByDev(string names)
         {
             if (ModelState.IsValid && names != null)
@@ -45,7 +45,7 @@ namespace GameLibraryRestApi.Controllers
         }
 
         [HttpGet]
-        [Route("{id}")]
+        [Route("by-id&{id}")]
         public async Task<IActionResult> GetGameById(int id)
         {
             if (ModelState.IsValid)
@@ -56,7 +56,7 @@ namespace GameLibraryRestApi.Controllers
         }
 
         [HttpPut]
-        [Route("{name}&{genres}&{developer}")]
+        [Route("add&{name}&{genres}&{developer}")]
         public async Task<IActionResult> AddNewGame(string name, string genres, string developer)
         {
 
@@ -76,7 +76,7 @@ namespace GameLibraryRestApi.Controllers
 
 
         [HttpDelete]
-        [Route("{name}")]
+        [Route("by-name&{name}")]
         public async Task<IActionResult> DelGameByName(string name)
         {
             if (ModelState.IsValid)
@@ -88,7 +88,7 @@ namespace GameLibraryRestApi.Controllers
         }
 
         [HttpDelete]
-        [Route("gameref{id}")]
+        [Route("reference&{id}")]
         public async Task<IActionResult> DelGameReference(int id)
         {
             if (ModelState.IsValid)

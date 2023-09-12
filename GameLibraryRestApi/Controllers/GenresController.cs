@@ -24,7 +24,7 @@ namespace GameLibraryRestApi.Controllers
         }
 
         [HttpGet]
-        [Route("allrefs")]
+        [Route("references")]
         public async Task<IActionResult> GetAllGenreRefs()
         {
             return Ok(await unitOfWorks.GenreRefs.GetAllAsync());
@@ -56,7 +56,7 @@ namespace GameLibraryRestApi.Controllers
         }
 
         [HttpPut]
-        [Route("addref&{game}&{genre}")]
+        [Route("add-reference&{game}&{genre}")]
         public async Task<IActionResult> AddNewGenreReference(string game, string genre)
         {
             if (ModelState.IsValid)
